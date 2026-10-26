@@ -1,0 +1,30 @@
+﻿/outputs/test_results
+/get_csv_data
+/old_MATLAB_put in the current DIR to run
+/old_py_put in the current DIR to run
+/windows.npz
+/outputs/figures/eps
+/model_xgb.joblib
+/requirements.txt
+*.egg-info/
+
+# Keep local/private files present but untracked
+/data/*
+!/data/.gitignore
+/config/my_system_config.json
+/outputs/
+/graphify-out/
+/.graphifyignore
+/scripts/sync_outputs_to_windows.sh
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pkl
+*.joblib
+*.keras
+*.npz
+*.h5
+*.onnx
+.env
+.env.*
+*.log

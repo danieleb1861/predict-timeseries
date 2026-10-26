@@ -1,0 +1,60 @@
+{
+  "presets": {
+    "manoeuvre": {
+      "selector": "manoeuvre",
+      "lookback": 20,
+      "horizon": 5,
+      "models": "all",
+      "predict_batch_size": 256,
+      "skip_eda": true,
+      "skip_plots": false
+    },
+    "navigation": {
+      "selector": "navigation",
+      "lookback": 50,
+      "horizon": 25,
+      "models": "all",
+      "predict_batch_size": 256,
+      "skip_eda": true,
+      "skip_plots": false
+    },
+    "manoeuvre_fast": {
+      "selector": "manoeuvre",
+      "lookback": 20,
+      "horizon": 5,
+      "models": "cnn,tcn,convlstm_hybrid",
+      "epochs": 5,
+      "batch_size": 128,
+      "predict_batch_size": 256,
+      "skip_eda": true,
+      "skip_plots": false
+    },
+    "manoeuvre_paper": {
+      "selector": "manoeuvre",
+      "lookback": 60,
+      "horizon": 25,
+      "models": "all",
+      "predict_batch_size": 256,
+      "skip_eda": true,
+      "skip_plots": false
+    },
+    "navigation_paper": {
+      "selector": "navigation",
+      "lookback": 60,
+      "horizon": 25,
+      "models": "all",
+      "predict_batch_size": 256,
+      "skip_eda": true,
+      "skip_plots": false
+    },
+    "all_paper": {
+      "selector": "all",
+      "lookback": 40,
+      "horizon": 15,
+      "models": "all",
+      "predict_batch_size": 256,
+      "skip_eda": true,
+      "skip_plots": false
+    }
+  }
+}

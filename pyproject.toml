@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "load-forecasting"
+version = "0.1.0"
+description = "Electric load forecasting models and analysis tools."
+requires-python = ">=3.11,<3.14"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Daniele Belvisi" },
+]
+dependencies = [
+    "typer==0.16.0",
+    "rich==14.0.0",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.scripts]
+predict-timeseries = "load_forecasting.cli:app"
+
+[project.optional-dependencies]
+ml = [
+    "tensorflow==2.20.0",
+    "keras==3.12.0",
+    "keras-tcn==3.5.6",
+    "scikit-learn==1.7.0",
+    "xgboost==3.1.2",
+    "joblib==1.5.1",
+    "numpy==2.3.5",
+    "pandas==2.3.1",
+    "pyarrow==22.0.0",
+    "scipy==1.16.0",
+    "matplotlib==3.10.3",
+    "seaborn==0.13.2",
+]
+dev = [
+    "pytest==8.4.1",
+    "ruff==0.12.0",
+    "black==25.1.0",
+    "mypy==1.16.1",
+]
+tui = []
+jax = [
+    "jax==0.6.2",
+    "jaxlib==0.6.2",
+    "flax==0.10.6",
+    "optax==0.2.5",
+    "orbax-checkpoint==0.12.1",
+]
+tune = [
+    "optuna==4.4.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["load_forecasting*"]
+
+[tool.ruff.lint]
+# CI gate: only error-class rules (syntax errors, undefined names, misused
+# comparisons). Style/unused-import cleanup is left out to avoid breaking
+# re-export modules such as load_forecasting/models/deep_hybrid_flax.py.
+select = ["E9", "F63", "F7", "F82"]
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+testpaths = ["tests"]

@@ -1,0 +1,102 @@
+{
+  "paths": {
+    "data_dir": "data",
+    "run_dir": "outputs/runs"
+  },
+  "dataset": {
+    "sampling_rate": "1s",
+    "max_fill_seconds": 45,
+    "selectors": {
+      "all": [
+        "demo_navigation.parquet",
+        "demo_manoeuvre.parquet"
+      ],
+      "manoeuvre": [
+        "demo_manoeuvre.parquet"
+      ],
+      "navigation": [
+        "demo_navigation.parquet"
+      ]
+    },
+    "columns": {
+      "date": "date",
+      "time": "time",
+      "act_pow": "act_pow_kW",
+      "react_pow": "react_pow_kVAR",
+      "man_port": "man_selector_port",
+      "man_stbd": "man_selector_starboard",
+      "spd_port": "lever_port",
+      "spd_stbd": "lever_starboard",
+      "air_temp": "air_temp",
+      "wind_int": "wind_intensity",
+      "sea_temp": "sea_temp",
+      "sea_state": "sea_state"
+    },
+    "dtypes": {
+      "date": "object",
+      "time": "object",
+      "act_pow": "float32",
+      "react_pow": "float32",
+      "man_port": "Int8",
+      "man_stbd": "Int8",
+      "spd_port": "float32",
+      "spd_stbd": "float32",
+      "air_temp": "float32",
+      "wind_int": "float32",
+      "sea_temp": "float32",
+      "sea_state": "float32"
+    }
+  },
+  "physical_system": {
+    "rating_kW": 2000.0,
+    "signals": {
+      "step_hold": [
+        "man_port",
+        "man_stbd",
+        "spd_port",
+        "spd_stbd"
+      ],
+      "resample_continuous": [
+        "act_pow_pu",
+        "react_pow_pu",
+        "air_temp",
+        "wind_intensity",
+        "sea_temp",
+        "sea_state"
+      ],
+      "standardize_continuous": [
+        "act_pow_pu",
+        "react_pow_pu",
+        "air_temp",
+        "sea_temp",
+        "wind_intensity",
+        "sea_state",
+        "lever_diff",
+        "pfactor",
+        "spd_port",
+        "spd_stbd",
+        "dP",
+        "moving_avg_5",
+        "moving_avg_10",
+        "moving_avg_20",
+        "moving_std_5",
+        "moving_std_10",
+        "moving_std_20",
+        "dQ",
+        "moving_avg_5_Q",
+        "moving_avg_10_Q",
+        "moving_avg_20_Q",
+        "moving_std_5_Q",
+        "moving_std_10_Q",
+        "moving_std_20_Q"
+      ],
+      "binary": [
+        "man_port",
+        "man_stbd"
+      ],
+      "targets": [
+        "act_pow_pu"
+      ]
+    }
+  }
+}

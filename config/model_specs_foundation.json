@@ -1,0 +1,25 @@
+{
+  "deep_models": {
+    "chronos2": {
+      "label": "Chronos-2 (0-shot)",
+      "builder": "foundation_zeroshot",
+      "artifact_name": "chronos2"
+    },
+    "timesfm": {
+      "label": "TimesFM (0-shot)",
+      "builder": "foundation_zeroshot",
+      "artifact_name": "timesfm"
+    },
+    "tirex2": {
+      "label": "TiRex-2 (0-shot, covariate-aware)",
+      "builder": "foundation_zeroshot",
+      "artifact_name": "tirex2"
+    },
+    "tirex2_univariate": {
+      "label": "TiRex-2 (0-shot)",
+      "builder": "foundation_zeroshot",
+      "artifact_name": "tirex2_univariate"
+    }
+  },
+  "hybrid_models": {}
+}

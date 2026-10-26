@@ -1,0 +1,218 @@
+{
+  "deep_models": {
+    "mlp": {
+      "label": "MLP",
+      "builder": "mlp",
+      "batch_size": 128,
+      "epochs": 40,
+      "learning_rate": 0.001,
+      "loss": "mse",
+      "shuffle": true
+    },
+    "gru": {
+      "label": "GRU",
+      "builder": "gru",
+      "batch_size": 128,
+      "epochs": 40,
+      "learning_rate": 0.001,
+      "loss": "mse",
+      "shuffle": true
+    },
+    "rnn": {
+      "label": "RNN",
+      "builder": "rnn",
+      "batch_size": 128,
+      "epochs": 40,
+      "learning_rate": 0.001,
+      "loss": "mse",
+      "shuffle": true
+    },
+    "cnn": {
+      "label": "CNN",
+      "builder": "cnn",
+      "batch_size": 128,
+      "epochs": 50,
+      "learning_rate": 0.000750011895041699,
+      "loss": "huber",
+      "shuffle": true
+    },
+    "tcn": {
+      "label": "TCN",
+      "builder": "tcn",
+      "batch_size": 256,
+      "epochs": 50,
+      "learning_rate": 0.0006689802001564378,
+      "loss": "huber",
+      "shuffle": true,
+      "builder_args": {
+        "nb_filters": 96,
+        "kernel_size": 3,
+        "dilations": [
+          1,
+          2,
+          4
+        ],
+        "dropout_rate": 0.29078095561461537
+      }
+    },
+    "transformer": {
+      "label": "Transformer",
+      "builder": "transformer",
+      "batch_size": 64,
+      "epochs": 50,
+      "learning_rate": 0.001193526270851053,
+      "loss": "huber",
+      "shuffle": true,
+      "artifact_key": "tr",
+      "plot_key": "transformer",
+      "log_key": "transformer",
+      "builder_args": {
+        "d_model": 64,
+        "num_heads": 2,
+        "ff_dim": 128,
+        "num_transformer_blocks": 2,
+        "dropout": 0.26616382277289796,
+        "mlp_units": [
+          64
+        ],
+        "mlp_dropout": 0.1,
+        "use_conv_stem": true
+      }
+    },
+    "dlinear": {
+      "label": "DLinear",
+      "builder": "dlinear",
+      "batch_size": 256,
+      "epochs": 40,
+      "learning_rate": 0.0007465184373467472,
+      "loss": "mse",
+      "shuffle": true,
+      "builder_args": {
+        "moving_avg_kernel": 7
+      }
+    },
+    "itransformer": {
+      "label": "iTransformer",
+      "builder": "itransformer",
+      "batch_size": 256,
+      "epochs": 50,
+      "learning_rate": 0.00010938275506641043,
+      "loss": "huber",
+      "shuffle": true,
+      "builder_args": {
+        "d_model": 32,
+        "num_heads": 2,
+        "ff_dim": 256,
+        "num_blocks": 1,
+        "dropout": 0.000961357703020639
+      }
+    },
+    "dual_stream_film": {
+      "label": "DualStream-FiLM",
+      "builder": "dual_stream_film",
+      "batch_size": 128,
+      "epochs": 50,
+      "learning_rate": 0.0027051668818999287,
+      "loss": "huber",
+      "shuffle": true,
+      "feature_groups": {
+        "endogenous": [
+          "act_pow_pu",
+          "react_pow_pu",
+          "pfactor",
+          "dP",
+          "moving_avg_5",
+          "moving_avg_10",
+          "moving_avg_20",
+          "moving_std_5",
+          "moving_std_10",
+          "moving_std_20"
+        ],
+        "propulsion": [
+          "lever_diff",
+          "spd_port",
+          "spd_stbd"
+        ],
+        "environment": [
+          "air_temp",
+          "sea_temp",
+          "wind_intensity",
+          "sea_state"
+        ]
+      },
+      "builder_args": {
+        "dynamics_width": 48,
+        "command_hidden": 16,
+        "environment_hidden": 8,
+        "context_width": 24,
+        "kernel_size": 3,
+        "dropout_rate": 0.06506606615265287,
+        "film_scale": 0.5,
+        "head_mode": "flat_direct",
+        "horizon_embed_dim": 16,
+        "decoder_width": 32
+      }
+    }
+  },
+  "hybrid_models": {
+    "convlstm_hybrid": {
+      "label": "ConvLSTM-H",
+      "builder": "convlstm_hybrid",
+      "artifact_name": "convlstm_hybrid",
+      "batch_size": 128,
+      "epochs": 40,
+      "learning_rate": 0.001,
+      "loss": "huber",
+      "shuffle": true
+    },
+    "tcnlstm_hybrid": {
+      "label": "TCN-LSTM-H",
+      "builder": "tcnlstm_hybrid",
+      "artifact_name": "tcnlstm_hybrid",
+      "batch_size": 128,
+      "epochs": 45,
+      "learning_rate": 0.001,
+      "loss": "huber",
+      "shuffle": true
+    },
+    "convtcn_hybrid": {
+      "label": "ConvTCN-H",
+      "builder": "convtcn_hybrid",
+      "artifact_name": "convtcn_hybrid",
+      "batch_size": 128,
+      "epochs": 45,
+      "learning_rate": 0.000750011895041699,
+      "loss": "huber",
+      "shuffle": true
+    },
+    "convlstmtcn_hybrid": {
+      "label": "ConvLSTMTCN-H",
+      "builder": "convlstmtcn_hybrid",
+      "artifact_name": "convlstmtcn_hybrid",
+      "batch_size": 256,
+      "epochs": 45,
+      "learning_rate": 0.002565418558482461,
+      "loss": "huber",
+      "shuffle": true
+    }
+  },
+  "tuning_meta": {
+    "preset": "navigation_paper",
+    "windows_dir": "outputs/runs/windows_navigation_paper",
+    "n_trials": 20,
+    "seed": 0,
+    "objective": "best early-stopped validation loss (per-model training loss)",
+    "backend": "flax",
+    "created_at": "2026-07-23T06:05:20",
+    "best_val_loss": {
+      "cnn": 0.0015666996519030363,
+      "tcn": 0.001659411807763501,
+      "transformer": 0.0016223403385630844,
+      "dlinear": 0.0030246021770359392,
+      "itransformer": 0.0017544250604260014,
+      "dual_stream_film": 0.001685100534749446,
+      "convtcn_hybrid": 0.0016952673788745458,
+      "convlstmtcn_hybrid": 0.0015819507863766159
+    }
+  }
+}
