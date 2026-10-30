@@ -1,12 +1,14 @@
 [//]: # (pandoc README.md -o README.pdf --pdf-engine=pdflatex)
 
-# Shipboard Electric Load Forecasting
+<h1 align="center">Shipboard Electric Load Forecasting</h1>
 
-[![python](https://img.shields.io/badge/-python-000000?logo=python&logoColor=white)](https://www.python.org/)
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
-[![JAX](https://img.shields.io/badge/JAX-000000?logo=jax)](https://github.com/jax-ml/jax)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-[![CLI](https://img.shields.io/badge/-CLI-000000?logo=gnu-bash&logoColor=white)](https://en.wikipedia.org/wiki/Command-line_interface)
+<div align="center">
+  [![CLI](https://img.shields.io/badge/-CLI-000000?logo=gnu-bash&logoColor=white)](https://en.wikipedia.org/wiki/Command-line_interface)
+  [![python](https://img.shields.io/badge/-python-000000?logo=python&logoColor=white)](https://www.python.org/)
+  [![JAX](https://img.shields.io/badge/JAX-000000?logo=jax)](https://github.com/jax-ml/jax)
+  [![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+  [![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+</div>
 
 ![Shipboard electric-load forecasting, from observed demand to multi-horizon predictions](docs/figures/shipboard-load-forecasting-hero.png)
 
