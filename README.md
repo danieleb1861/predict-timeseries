@@ -3,11 +3,13 @@
 <h1 align="center">Shipboard Electric Load Forecasting</h1>
 
 <div align="center">
-  [![CLI](https://img.shields.io/badge/-CLI-000000?logo=gnu-bash&logoColor=white)](https://en.wikipedia.org/wiki/Command-line_interface)
-  [![python](https://img.shields.io/badge/-python-000000?logo=python&logoColor=white)](https://www.python.org/)
-  [![JAX](https://img.shields.io/badge/JAX-000000?logo=jax)](https://github.com/jax-ml/jax)
-  [![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
-  [![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+  
+[![CLI](https://img.shields.io/badge/-CLI-000000?logo=gnu-bash&logoColor=white)](https://en.wikipedia.org/wiki/Command-line_interface)
+[![python](https://img.shields.io/badge/-python-000000?logo=python&logoColor=white)](https://www.python.org/)
+[![JAX](https://img.shields.io/badge/JAX-000000?logo=jax)](https://github.com/jax-ml/jax)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+
 </div>
 
 ![Shipboard electric-load forecasting, from observed demand to multi-horizon predictions](docs/figures/shipboard-load-forecasting-hero.png)
@@ -118,16 +120,13 @@ Every option installs the `predict-timeseries` command.
 
 Dependencies are declared in `pyproject.toml`.
 
-## Why It Matters
+## Motivation and Scope
 
-A shipboard electrical plant is islanded: there is no external grid to absorb a load step. An unanticipated demand transient must be covered by strategic loading of the generating set, by starting a further electric generator, or by using a storage system. For this reason, a common practice is to set reserve margins conservatively and to hold prime movers at less efficient part-load operating points.
+Shipboard electrical systems operate as isolated microgrids, where rapid load transients during manoeuvring challenge generator loading and energy storage management. Short-term load forecasting can provide Energy Management Systems (EMS) with advance information to support predictive power allocation rather than relying solely on reactive control.
 
-The idea is to forecast the load ahead to let an energy management system use forecast-enhanced state information before the transient instead of reacting to it: pre-dispatching generating sets, scheduling the storage contribution, and reducing the reserve carried continuously.
+This repository provides a reproducible framework for preprocessing, training and benchmarking forecasting architectures, including an online aggregation method with leakage-aware evaluation and deployment-oriented latency measurements.
 
-This repository covers the forecasting side of that problem. It provides a preprocessing and evaluation pipeline with leg-based splits and train-only scaling, so that model families can be compared on identical windows and inverse-scaled metrics.
-The intended suite is useful to benchmark time series model families for various applications.
-
-It does not include an EMS controller, and the reported numbers depend on the restricted dataset described under [Data](#data). A synthetic dataset for the user trials is also provided.
+The scope is limited to load forecasting. The operational dataset is subject to the restrictions described in [Data](#data), while synthetic data are provided for testing the pipeline.
 
 ## Repository Structure
 
@@ -183,7 +182,7 @@ Single-line `python` and `predict-timeseries` commands are cross-platform. Virtu
 
 ### GPU Training via WSL (optional)
 
-CPU-only runs are sufficient for the demo, the Ridge/XGBoost baselines, and the test suite. The GPU path matters only for the multi-seed Flax benchmark.
+CPU-only runs are sufficient for the demo, the Ridge/XGBoost baselines, and the test suite. The GPU path matters only for the multi-seed Flax benchmarks.
 
 JAX no longer ships CUDA builds for native Windows, so GPU training of the Flax models runs under WSL2 (Ubuntu). Keep the repository and the virtual environment on the WSL-native filesystem (for example `~/predict-timeseries`, not `/mnt/c/...` or `/mnt/d/...`): training I/O and Optuna's sqlite storage are slower and lock-prone on `/mnt/*`.
 
