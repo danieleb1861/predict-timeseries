@@ -2,7 +2,7 @@
 
 Extends compute_peak_metrics.py's tail/energy/ramp metrics to the naive
 persistence forecast (y_hat(t+h) = y(t) for all h), evaluated on the exact
-same cached test windows as the seven benchmarked models, then reports the
+same cached test windows as the eight benchmarked models, then reports the
 persistence-relative skill score
 
     S_E = 1 - E_model / E_pers
@@ -12,7 +12,7 @@ Eq. for S_E, Section "Peak-aware and energy metrics"). Positive S_E means the
 model beats persistence on that event-conditioned metric.
 
 Reuses peak_metrics() from compute_peak_metrics.py unmodified, and reads the
-existing per-archive peak_metrics.csv (already computed for the seven
+existing per-archive peak_metrics.csv (already computed for the eight
 models) rather than recomputing them.
 
 Example (single archive):
