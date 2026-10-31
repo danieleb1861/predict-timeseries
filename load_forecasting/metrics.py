@@ -64,8 +64,27 @@ def load_metrics_outputs(run_dir, *, expected_horizon=None):
     return frame
 
 
-def bootstrap_mean_ci(values, n_boot=1000, ci=95, seed=42):
-    """Return a bootstrap confidence interval for the sample mean."""
+def moving_block_resample(values, rng, block_len=1):
+    """Draw one bootstrap sample of values.size from overlapping contiguous blocks.
+
+    block_len=1 is the ordinary i.i.d. bootstrap (Kunsch, 1989, for block_len>1).
+    """
+    n = values.size
+    if block_len < 1:
+        raise ValueError("block_len must be a positive integer")
+    if block_len == 1:
+        return rng.choice(values, size=n, replace=True)
+    block_len = min(block_len, n)
+    starts = rng.integers(0, n - block_len + 1, size=-(-n // block_len))
+    return values[(starts[:, None] + np.arange(block_len)).ravel()[:n]]
+
+
+def bootstrap_mean_ci(values, n_boot=1000, ci=95, seed=42, block_len=1):
+    """Return a bootstrap confidence interval for the sample mean.
+
+    Keep block_len=1 only for independent values. Overlapping forecast windows
+    are autocorrelated, so they need block_len>1 or the interval is too narrow.
+    """
     values = np.asarray(values, dtype=np.float64)
     if values.ndim != 1 or values.size == 0:
         raise ValueError("bootstrap_mean_ci expects a non-empty 1D array")
@@ -74,7 +93,7 @@ def bootstrap_mean_ci(values, n_boot=1000, ci=95, seed=42):
     n = values.size
     boot = np.empty(n_boot, dtype=np.float64)
     for i in range(n_boot):
-        boot[i] = np.mean(rng.choice(values, size=n, replace=True))
+        boot[i] = np.mean(moving_block_resample(values, rng, block_len))
 
     alpha = (100.0 - ci) / 2.0
     return {
@@ -90,11 +109,11 @@ def compute_point_metrics(y_true, y_pred, d_plot):
 
     Inputs
     ----------
-    y_true : array-like
+    y_true : np.ndarray
         Ground truth values dim(y_true) = (num_windows, HorizonSteps, output_dim).
-    y_pred : array-like
+    y_pred : np.ndarray
         Predicted values dim(y_pred) = dim(y_true).
-    d_plot : int, default=0
+    d_plot : int
         Target feature to evaluate.
 
     Returns
@@ -104,7 +123,7 @@ def compute_point_metrics(y_true, y_pred, d_plot):
           - RMSE_horizon : np.ndarray, shape (HorizonSteps,)
           - MAE_horizon  : np.ndarray, shape (HorizonSteps,)
           - MAPE_horizon : np.ndarray, shape (HorizonSteps,)
-          - MAPE_targetax: np.ndarray, shape (num_windows,)  (mean over horizon)
+          - MAPE_targetax: list[float], length num_windows  (mean over horizon)
           - RMSE_all     : float
           - MAE_all      : float
           - MAPE_all     : float
@@ -136,6 +155,8 @@ def compute_metrics(y_true, y_pred, d_plot, *, include_confidence=True):
 
     Confidence intervals remain enabled by default. Disable them for consumers
     that only use point scores; the three MAPE_boot keys are then omitted.
+    These keys resample windows independently, so they understate uncertainty
+    for overlapping windows: use scripts/compute_leg_bootstrap_ci.py for inference.
     """
     point_metrics = compute_point_metrics(y_true, y_pred, d_plot)
     if not include_confidence:

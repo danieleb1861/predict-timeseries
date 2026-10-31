@@ -4,8 +4,8 @@ The navigation (and manoeuvre) test split concatenates whole voyage legs (load_f
 
 This script instead:
 - supports both legacy archives containing cross-leg windows and corrected archives whose window construction already removes them;
-- computes the ordinary bootstrap CI (load_forecasting.metrics.bootstrap_mean_ci) separately within each remaining leg;
-- combines the legs with equal weight: on each of n_boot iterations, draw one bootstrap resample from each leg independently and average the two resample means, so a leg's sample count does not bias the combined estimate.
+- computes a moving-block bootstrap CI (load_forecasting.metrics.bootstrap_mean_ci) separately within each remaining leg, because overlapping windows are autocorrelated; --block-len defaults to ceil((L + H) / stride), which covers the overlap only, so longer dependence still needs a longer block and --block-len 1 restores the ordinary i.i.d. bootstrap;
+- combines the legs with equal weight: on each of n_boot iterations, draw one bootstrap resample from each leg independently and average the leg resample means, so a leg's sample count does not bias the combined estimate.
 
 Example:
     python scripts/compute_leg_bootstrap_ci.py \
@@ -15,6 +15,7 @@ Example:
 from __future__ import annotations
 
 import argparse
+import math
 import pickle
 import sys
 from pathlib import Path
@@ -26,7 +27,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from load_forecasting.config import resolve_default_config  # noqa: E402
-from load_forecasting.metrics import bootstrap_mean_ci  # noqa: E402
+from load_forecasting.metrics import bootstrap_mean_ci, moving_block_resample  # noqa: E402
 from load_forecasting.scaling import inverse_scale_targets  # noqa: E402
 from train_load_forecasters import load_and_preprocess_legs  # noqa: E402
 from load_forecasting.data_prep import add_engineered  # noqa: E402
@@ -45,7 +46,7 @@ def per_window_mape(y_true: np.ndarray, y_hat: np.ndarray, eps: float = 1e-6) ->
 
 
 def test_leg_boundaries(system_config_path: Path, selector: str) -> tuple[int, list[int]]:
-    """Return (T, cumulative row counts per test leg) for the raw (pre-window) test frame."""
+    """Return (T, row count per test leg) for the raw (pre-window) test frame."""
     import json
 
     cfg = json.loads(system_config_path.read_text(encoding="utf-8"))
@@ -94,7 +95,7 @@ def clean_leg_window_masks(T: int, leg_sizes: list[int], lookback: int, horizon:
 
 
 def combined_leg_bootstrap(leg_mapes: list[np.ndarray], n_boot: int = 1000,
-                           ci: float = 95, seed: int = 42) -> dict:
+                           ci: float = 95, seed: int = 42, block_len: int = 1) -> dict:
     """Bootstrap an equal-weight mean across any positive number of legs."""
     if not leg_mapes or any(mape.size == 0 for mape in leg_mapes):
         raise ValueError("leg_mapes must contain one non-empty array per leg")
@@ -102,7 +103,7 @@ def combined_leg_bootstrap(leg_mapes: list[np.ndarray], n_boot: int = 1000,
     boot = np.empty(n_boot, dtype=np.float64)
     for i in range(n_boot):
         boot[i] = np.mean([
-            rng.choice(mape, size=mape.size, replace=True).mean()
+            moving_block_resample(mape, rng, block_len).mean()
             for mape in leg_mapes
         ])
     alpha = (100.0 - ci) / 2.0
@@ -126,6 +127,8 @@ def main() -> int:
     parser.add_argument("--system-config", default=resolve_default_config(REPO_ROOT / "config"))
     parser.add_argument("--d-plot", type=int, default=0)
     parser.add_argument("--n-boot", type=int, default=1000)
+    parser.add_argument("--block-len", type=int, default=None,
+                        help="Moving-block length in windows (default: ceil((L+H)/stride); 1 is i.i.d.)")
     args = parser.parse_args()
 
     archive = Path(args.archive)
@@ -139,6 +142,8 @@ def main() -> int:
     horizon = y_true.shape[1]
     stride = int(meta["WindowSlidingCoeff"])
     n_windows = y_true.shape[0]
+    block_len = args.block_len if args.block_len is not None else math.ceil((lookback + horizon) / max(stride, 1))
+    print(f"Moving-block length: {block_len} windows")
 
     print("Reconstructing test-leg boundaries from the raw pipeline (no leakage into training)...")
     T, leg_sizes = test_leg_boundaries(REPO_ROOT / args.system_config, args.selector)
@@ -161,9 +166,9 @@ def main() -> int:
         mape_w = per_window_mape(y_true, y_hat)
 
         leg_mape = [mape_w[m] for m in masks]
-        leg_ci = [bootstrap_mean_ci(lm, n_boot=args.n_boot) for lm in leg_mape]
+        leg_ci = [bootstrap_mean_ci(lm, n_boot=args.n_boot, block_len=block_len) for lm in leg_mape]
 
-        row = {"model": label}
+        row = {"model": label, "block_len": block_len}
         for i, (lm, ci) in enumerate(zip(leg_mape, leg_ci)):
             row[f"n_leg{i}"] = lm.size
             row[f"mape_leg{i}"] = float(lm.mean())
@@ -171,7 +176,7 @@ def main() -> int:
             row[f"ci_leg{i}_high"] = ci["high"]
 
         if leg_mape:
-            combined = combined_leg_bootstrap(leg_mape, n_boot=args.n_boot)
+            combined = combined_leg_bootstrap(leg_mape, n_boot=args.n_boot, block_len=block_len)
             row["mape_combined"] = float(np.mean([mape.mean() for mape in leg_mape]))
             row["ci_combined_low"] = combined["low"]
             row["ci_combined_high"] = combined["high"]
