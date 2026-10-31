@@ -8,7 +8,7 @@ writes results into <run-root>/significance/.
 The DM test uses per-window horizon-mean squared errors on the test set with a
 Newey-West (Bartlett kernel) variance and the Harvey-Leybourne-Newbold
 small-sample correction. The HAC lag count defaults to ceil((L + H) / stride)
-because sliding windows overlap (stride = H/5), which induces strong error
+because sliding windows overlap (stride = floor(H/5)), which induces strong error
 autocorrelation; a naive DM variance would overstate significance.
 
 Example:
@@ -49,7 +49,7 @@ def newey_west_variance(d, lags):
     var = float(np.mean(d * d))
     for k in range(1, min(lags, n - 1) + 1):
         w = 1.0 - k / (lags + 1.0)
-        var += 2.0 * w * float(np.mean(d[k:] * d[:-k]))
+        var += 2.0 * w * float(np.sum(d[k:] * d[:-k])) / n
     return max(var, 1e-300) / n
 
 
