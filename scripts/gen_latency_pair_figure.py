@@ -55,9 +55,9 @@ DISPLAY = {"ConvTCN-H": "ConvTCN", "ConvLSTMTCN-H": "ConvLSTM-TCN",
            "convtcn_hybrid": "ConvTCN", "convlstmtcn_hybrid": "ConvLSTM-TCN"}
 BUDGET_MS = 100.0
 COLOURS = {"non-JIT": "#9ecae1", "JIT": "#f4a582"}
-FM_ORDER = ["Chronos-2 (0-shot)", "TimesFM (0-shot)", "TiRex-2 (0-shot)"]
+FM_ORDER = ["Chronos-2 (0-shot)", "TimesFM (0-shot)", "TiRex-2 (0-shot)", "Timestral-209M (0-shot)", "t0-gamma (0-shot)"]
 FM_DISPLAY = {"Chronos-2 (0-shot)": "Chronos-2", "TimesFM (0-shot)": "TimesFM",
-              "TiRex-2 (0-shot)": "TiRex-2"}
+              "TiRex-2 (0-shot)": "TiRex-2", "Timestral-209M (0-shot)": "Timestral-209M", "t0-gamma (0-shot)": "t0-gamma"}
 FM_COLOUR = "#9ecae1"  # eager PyTorch execution, same fill as the non-JIT path
 
 

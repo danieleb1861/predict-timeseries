@@ -247,7 +247,63 @@ def build_tirex2_univariate_adapter(device: str = "cuda", *,
     )
 
 
+def build_timestral_adapter(device: str = "cuda") -> FoundationAdapter:
+    from timestral import TimestralForecaster
+
+    model = TimestralForecaster.from_pretrained(
+        "mistralai/Timestral-209M", device=device,
+        revision="9874d252ab0aae16f7f7c999f98f98d6ad7d8365",
+    )
+    model.model.eval()
+
+    def predict_batch(history_phys: np.ndarray, horizon: int,
+                      covariates_phys: np.ndarray | None = None) -> np.ndarray:
+        if covariates_phys is not None:
+            raise ValueError("timestral adapter is run univariate-only; got covariates")
+        # Match the paper's single-pass foundation protocol: no sign-flip TTA.
+        raw = model.forecast(history_phys, prediction_length=horizon,
+                             symmetric_averaging=False, clip_nonnegative=False)
+        median = raw.median.detach().cpu().numpy().astype(np.float32)
+        expected = (history_phys.shape[0], 1, horizon)
+        if median.shape != expected:
+            raise ValueError(f"Expected Timestral median shape {expected}, got {median.shape}")
+        return median[:, 0, :]
+
+    return FoundationAdapter(
+        key="timestral", label="Timestral-209M (0-shot)",
+        covariate_aware=False, predict_batch=predict_batch,
+    )
+
+
+def build_t0gamma_adapter(device: str = "cuda") -> FoundationAdapter:
+    from t0 import T0Forecaster
+
+    model = T0Forecaster.from_pretrained(
+        "theforecastingcompany/t0-gamma",
+        revision="fef67abad3eed4f227c7b536a6e8ee4e9ab1080d",
+    ).to(device).eval()
+
+    def predict_batch(history_phys: np.ndarray, horizon: int,
+                      covariates_phys: np.ndarray | None = None) -> np.ndarray:
+        if covariates_phys is not None:
+            raise ValueError("t0gamma adapter is run univariate-only; got covariates")
+        raw = model.predict(history_phys, horizon=horizon, quantile_levels=[0.5],
+                            symmetric_averaging=False, clip_nonnegative=False)
+        median = raw.median.detach().cpu().numpy().astype(np.float32)
+        expected = (history_phys.shape[0], horizon)
+        if median.shape != expected:
+            raise ValueError(f"Expected t0-gamma median shape {expected}, got {median.shape}")
+        return median
+
+    return FoundationAdapter(
+        key="t0gamma", label="t0-gamma (0-shot)",
+        covariate_aware=False, predict_batch=predict_batch,
+    )
+
+
 ADAPTER_BUILDERS = {
+    "timestral": build_timestral_adapter,
+    "t0gamma": build_t0gamma_adapter,
     "chronos2": build_chronos2_adapter,
     "timesfm": build_timesfm_adapter,
     "tirex2": build_tirex2_adapter,

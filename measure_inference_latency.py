@@ -96,7 +96,7 @@ DEFAULT_FLAX_MODELS = (
     "ConvTCN-H:model_convtcn_hybrid_flax,ConvLSTMTCN-H:model_convlstmtcn_hybrid_flax"
 )
 DEFAULT_FOUNDATION_MODELS = "chronos2,timesfm,tirex2_univariate"
-FOUNDATION_KEYS = {"chronos2", "timesfm", "tirex2_univariate"}
+FOUNDATION_KEYS = {"chronos2", "timesfm", "tirex2_univariate", "timestral", "t0gamma"}
 REPO_ROOT = Path(__file__).resolve().parent
 PIN_CPU = 2  # logical CPU on a performance core of the i9-14900HX (P-cores are 0-15)
 CPU_TIMES = {}  # (label, method) -> mean process CPU ms per call, filled with --cpu-time
@@ -410,7 +410,7 @@ def build_foundation_adapter(model_key, args, lookback, horizon):
             f"available: {sorted(ADAPTER_BUILDERS)}"
         )
     device = "cpu" if args.cpu else args.device
-    if model_key == "chronos2":
+    if model_key in ("chronos2", "timestral", "t0gamma"):
         return ADAPTER_BUILDERS[model_key](device=device)
     if model_key == "timesfm":
         max_context = math.ceil(lookback / 32) * 32
