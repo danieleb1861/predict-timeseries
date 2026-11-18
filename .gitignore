@@ -28,3 +28,6 @@ __pycache__/
 .env
 .env.*
 *.log
+
+# mathkeel map, contracts and decisions (local)
+.mathkeel/

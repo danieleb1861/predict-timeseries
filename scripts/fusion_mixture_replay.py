@@ -109,6 +109,41 @@ def replay(P, Y, ctx, prior, eta, alpha, omega_fn, scale, stride, weights_out=No
     return fused
 
 
+def replay_grid(P, Y, ctx, priors, etas, alphas, omega_fn, scale, stride):
+    """replay() for G configurations side by side, for the grid search.
+
+    priors (G, K, H, n_ctx), etas and alphas (G,). Same arithmetic as replay() for each configuration (expert losses
+    precomputed once, since they do not depend on the weights). Returns the mean of
+    omega(y) [GAMMA if fused < y else 1] |fused - y|^POWER per configuration (the loss of replay(); GAMMA = 1 for COAST),
+    accumulated per window instead of storing the G fused forecasts.
+    """
+    K, N, H = P.shape
+    eta = np.asarray(etas, float)[:, None, None]
+    alpha = np.asarray(alphas, float)[:, None, None]
+    delay = np.ceil(np.arange(1, H + 1) / stride).astype(int)
+    E = P - Y[None]
+    L = omega_fn(Y)[None] * np.where(E < 0, GAMMA, 1.0) * np.abs(E) ** POWER / scale[None, None]  # (K, N, H)
+    del E
+    wy = omega_fn(Y)
+    w = priors[:, :, :, ctx[0]].copy()  # (G, K, H)
+    acc = np.zeros(len(eta))
+    hh = np.arange(H)
+    for n in range(N):
+        f = (w * P[None, :, n, :]).sum(1)  # (G, H)
+        acc += (wy[n] * np.where(f < Y[n], GAMMA, 1.0) * np.abs(f - Y[n]) ** POWER).sum(1)
+        if n + 1 == N:
+            break
+        m = n + 1 - delay
+        ok = m >= 0
+        if ok.any():
+            mh, h_ok = m[ok], hh[ok]
+            loss = L[:, mh, h_ok]  # (K, h)
+            w[:, :, h_ok] *= np.exp(-eta * (loss - loss.min(0))[None])
+            w[:, :, h_ok] /= w[:, :, h_ok].sum(1, keepdims=True)
+        w = (1 - alpha) * w + alpha * priors[:, :, :, ctx[n + 1]]
+    return acc / (N * H)
+
+
 def fit_prior(P, Y, ctx, kappa, omega_fn, scale, n_ctx=6):
     """pi_h(c) proportional to exp(-kappa * mean normalised loss of expert k in cell c)."""
     K, _, H = P.shape

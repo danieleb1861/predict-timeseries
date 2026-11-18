@@ -34,6 +34,25 @@ predict-timeseries
 predict-timeseries --status
 ```
 
+On an interactive terminal the root command first prints a splash banner:
+a measured load curve, a "now" marker, and a forecast with a widening
+uncertainty cone, next to the `PREDICT-TIMESERIES` wordmark, the package
+version, and the git `branch@commit`. The layout adapts to the terminal:
+
+- about 116 columns or more: full banner;
+- narrower: one compact line, which drops the git ref and then the version
+  until it fits;
+- non-UTF-8 console (for example a legacy Windows code page): ASCII-only line.
+
+The banner is skipped when output is piped or captured, and for subcommands
+such as `predict-timeseries status`. To hide it explicitly:
+
+```bash
+predict-timeseries --no-banner
+```
+
+The banner code lives in `load_forecasting/brand.py`.
+
 List presets:
 
 ```bash

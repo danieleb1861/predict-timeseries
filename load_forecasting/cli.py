@@ -18,6 +18,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from load_forecasting.brand import render_banner
+
 
 def _default_config(config_dir: Path) -> Path:
     """Mirror load_forecasting.config.resolve_default_config.
@@ -211,6 +213,59 @@ def _load_pyproject() -> dict:
         return {}
 
     return tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
+
+
+def _git_ref() -> Optional[str]:
+    """
+    Return ``branch@shortsha`` for the workspace, or None if git is unavailable.
+
+    Inputs
+    ----------
+    None
+
+    Returns
+    -------
+    str or None
+        Current git branch and short commit hash.
+    """
+    parts = []
+    for flag in ("--abbrev-ref", "--short"):
+        try:
+            completed = subprocess.run(
+                ["git", "rev-parse", flag, "HEAD"],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                timeout=2,
+                check=True,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return None
+        parts.append(completed.stdout.strip())
+
+    return "@".join(parts) if all(parts) else None
+
+
+def _render_banner() -> None:
+    """
+    Print the splash banner on interactive terminals only.
+
+    Inputs
+    ----------
+    None
+
+    Returns
+    -------
+    None
+        Prints the banner; prints nothing when output is piped or captured.
+    """
+    if not console.is_terminal:
+        return
+
+    version = _load_pyproject().get("project", {}).get("version")
+    console.print()
+    console.print(render_banner(console, version=version, git_ref=_git_ref()))
+    console.print()
 
 
 def _pytest_command() -> list[str]:
@@ -665,6 +720,11 @@ def main(
         "--results",
         help="Show recent results and exit.",
     ),
+    no_banner: bool = typer.Option(
+        False,
+        "--no-banner",
+        help="Do not show the splash banner.",
+    ),
 ) -> None:
     """
     Run the default TUI entry point.
@@ -681,6 +741,8 @@ def main(
         If True, list configured presets and exit.
     show_results : bool, optional
         If True, show recent results and exit.
+    no_banner : bool, optional
+        If True, skip the splash banner.
 
     Returns
     -------
@@ -691,6 +753,9 @@ def main(
 
     if ctx.invoked_subcommand is not None:
         return
+
+    if not no_banner:
+        _render_banner()
 
     if show_presets:
         _render_presets()
